@@ -2,21 +2,23 @@ import { createContext, useState, useCallback, useMemo } from "react";
 
 const ColorsContext = createContext({
   colorPalette: {},
-  setColorPalette: () => {},
+  setColorPalette: () => { },
   imagePixelData: {},
-  setImagePixelData: () => {},
+  setImagePixelData: () => { },
   lookupTableValues: [],
-  setLookupTableValues: () => {},
+  setLookupTableValues: () => { },
   uploadedImage: null,
-  setUploadedImage: () => {},
+  setUploadedImage: () => { },
   scrapedColors: {},
-  setScrapedColors: () => {},
+  setScrapedColors: () => { },
   highlightedColor: {},
-  setHighlightedColor: () => {},
+  setHighlightedColor: () => { },
   selectedBrands: {},
-  setSelectedBrands: () => {},
+  setSelectedBrands: () => { },
   beadSize: "",
-  setBeadSize: () => {},
+  setBeadSize: () => { },
+  showOriginalColors: false,
+  setShowOriginalColors: () => { }
 });
 
 export const ColorsContextProvider = ({ children }) => {
@@ -26,6 +28,7 @@ export const ColorsContextProvider = ({ children }) => {
   const [uploadedImage, updateUploadedImage] = useState(null);
   const [scrapedColors, updateScrapedColors] = useState({});
   const [highlightedColor, setHighlightedColor] = useState(null);
+  const [showOriginalColors, updateShowOriginalColors] = useState(false);
   const [selectedBrands, updateSelectedBrands] = useState({
     perler: true,
     artkal: true,
@@ -52,6 +55,11 @@ export const ColorsContextProvider = ({ children }) => {
 
   const setScrapedColors = useCallback(
     (colors) => updateScrapedColors(colors),
+    []
+  );
+
+  const setShowOriginalColors = useCallback(
+    (colors) => updateShowOriginalColors(colors),
     []
   );
 
@@ -85,6 +93,8 @@ export const ColorsContextProvider = ({ children }) => {
       setSelectedBrands,
       beadSize,
       setBeadSize,
+      showOriginalColors,
+      setShowOriginalColors
     }),
     [
       colorPalette,
@@ -103,6 +113,8 @@ export const ColorsContextProvider = ({ children }) => {
       setSelectedBrands,
       beadSize,
       setBeadSize,
+      showOriginalColors,
+      setShowOriginalColors
     ]
   );
 

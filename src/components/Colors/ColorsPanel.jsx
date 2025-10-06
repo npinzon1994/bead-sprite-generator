@@ -3,13 +3,18 @@ import classes from "./ColorsPanel.module.css";
 import { useContext } from "react";
 import ColorsContext from "../../context/colors-context";
 import ProjectInfoWindow from "./ProjectInfoWindow";
-import { Box } from "@mui/material";
+import {
+  Box, FormControlLabel,
+  Checkbox, useTheme
+} from "@mui/material";
 import BeadFilter from "./BeadFilter";
 import { useQuery } from "@tanstack/react-query";
 
 const ColorsPanel = () => {
-  const { colorPalette, selectedBrands, beadSize, setScrapedColors } = useContext(ColorsContext);
+  const { colorPalette, selectedBrands, beadSize, setScrapedColors, setSelectedBrands, showOriginalColors, setShowOriginalColors } = useContext(ColorsContext);
   const colorsNotEmpty = Object.values(colorPalette).length > 0;
+
+  const theme = useTheme();
 
   function fetchScrapedColors(selectedBrands, beadSize) {
     console.log("Selected Brands: ", selectedBrands);
@@ -58,6 +63,24 @@ const ColorsPanel = () => {
       <ProjectInfoWindow />
       <BeadFilter />
       {colorsList}
+      <Box>
+        <FormControlLabel
+          sx={{
+            "& .MuiTypography-root": {
+              fontSize: theme.typography.small,
+            },
+          }}
+          control={
+            <Checkbox
+              sx={{ "& .MuiSvgIcon-root": { fontSize: 18 } }}
+              checked={showOriginalColors}
+              onChange={() => setShowOriginalColors((prev) => !prev)}
+              inputProps={{ "aria-label": "controlled" }}
+            />
+          }
+          label="Original Colors"
+        />
+      </Box>
     </Box>
   );
 };

@@ -23,6 +23,8 @@ function PixelMapper() {
     setImagePixelData,
     uploadedImage,
     highlightedColor,
+    showOriginalColors,
+    setShowOriginalColors
   } = useContext(ColorsContext);
 
   const { backgroundSettings, gridSettings, boardSize, zoomLevel } =
@@ -150,11 +152,11 @@ function PixelMapper() {
       return;
     }
 
-    if (!imagePixelData.updatedPixels) {
-      return;
-    }
+    // if (!imagePixelData.updatedPixels) {
+    //   return;
+    // }
 
-    const { width, height, updatedPixels } = imagePixelData;
+    const { width, height, updatedPixels, originalPixels } = imagePixelData;
 
     const gridLines = generateGrid(
       width,
@@ -187,11 +189,13 @@ function PixelMapper() {
     //gather data and draw image
     const pixelData = new Uint8ClampedArray(width * height * 4);
 
-    for (let i = 0; i < updatedPixels.length; i += 4) {
-      const r = updatedPixels[i];
-      const g = updatedPixels[i + 1];
-      const b = updatedPixels[i + 2];
-      const a = updatedPixels[i + 3];
+    //see if OG colors box was checked
+    const outputPixels = showOriginalColors ? originalPixels : updatedPixels;
+    for (let i = 0; i < outputPixels.length; i += 4) {
+      const r = outputPixels[i];
+      const g = outputPixels[i + 1];
+      const b = outputPixels[i + 2];
+      const a = outputPixels[i + 3];
 
       pixelData[i] = r;
       pixelData[i + 1] = g;
@@ -239,6 +243,7 @@ function PixelMapper() {
     gridSettings,
     boardSize,
     highlightedColor,
+    showOriginalColors
   ]);
 
   //adjusting size of main so scrollbars appear on overflow
@@ -255,9 +260,8 @@ function PixelMapper() {
     <main
       id={classes.main}
       ref={mainRef}
-      className={`${spacePressed ? classes["space-pressed"] : ""} ${
-        isGrabbing ? classes["is-grabbing"] : ""
-      }`}
+      className={`${spacePressed ? classes["space-pressed"] : ""} ${isGrabbing ? classes["is-grabbing"] : ""
+        }`}
       onMouseOver={() => setIsHovering(true)}
       onMouseOut={() => setIsHovering(false)}
       onMouseDown={handleMouseDown}
@@ -266,8 +270,8 @@ function PixelMapper() {
       style={
         backgroundSettings.isVisible
           ? {
-              background: backgroundSettings.color,
-            }
+            background: backgroundSettings.color,
+          }
           : undefined
       }
     >
