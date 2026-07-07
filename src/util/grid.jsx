@@ -30,7 +30,7 @@ export function setHorizontalLines(width, height, board, color) {
   for (let i = 0; i <= height; i++) {
     const y = Math.round(i);
     const atEdge = i % board.height === 0;
-    const strokeWidth = atEdge ? 0.4 : 0.1;
+    const strokeWidth = atEdge ? 0.2 : 0.03;
     const line = (
       <line
         key={`h-${i}`}
@@ -52,7 +52,7 @@ export function setVerticalLines(width, height, board, color) {
   for (let i = 0; i <= width; i++) {
     const x = Math.round(i);
     const atEdge = i % board.width === 0;
-    const strokeWidth = atEdge ? 0.25 : 0.05;
+    const strokeWidth = atEdge ? 0.2 : 0.03;
     const line = (
       <line
         key={`v-${i}`}

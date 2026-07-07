@@ -31,8 +31,8 @@ export const ColorsContextProvider = ({ children }) => {
   const [showOriginalColors, updateShowOriginalColors] = useState(false);
   const [selectedBrands, updateSelectedBrands] = useState({
     perler: true,
-    artkal: true,
-    top_tier: true,
+    artkal: false,
+    top_tier: false,
   });
   const [beadSize, updateBeadSize] = useState("midi");
 

@@ -17,7 +17,7 @@ export function parseColors(pixels) {
 }
 
 export function toMatrix(rgbArray, colorMode = "RGBA") {
-  if (rgbArray.length % 3 !== 0 && rgbArray.length % 4 !== 0) {
+ if (rgbArray.length % 3 !== 0 && rgbArray.length % 4 !== 0) {
     throw new Error("Invalid pixel data length. Image may be corrupted.");
   }
 
@@ -77,18 +77,25 @@ export function RGBAtoXYZA(rgbaMatrix) {
   const r = rgbaMatrix[0];
   const g = rgbaMatrix[1];
   const b = rgbaMatrix[2];
+
+  //filling in alpha values whether it's the INPUT MATRIX or LOOKUP TABLE (doesn't have alpha values) 
   const a = rgbaMatrix.length === 4 ? rgbaMatrix[3] : Array(r.length).fill(255);
 
+  //separating RGB values for matrix multiplication
   const newMatrix_RGB = [r, g, b];
+  // console.log("New RGB Matrix: ", newMatrix_RGB);
 
   const normalizedValues = newMatrix_RGB.map((innerArray) =>
     innerArray.map((value) => value / 255)
   );
+  // console.log("Normalized Values: ", normalizedValues);
+
   const linearizedValues = normalizedValues.map((innerArray) =>
     innerArray.map((value) =>
       value <= 0.04045 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4)
     )
   );
+  // console.log("Linearized Values: ", linearizedValues);
 
   // Get dimensions of the matrices
   const rowsA = CONVERSION_MATRIX.length;
@@ -109,45 +116,47 @@ export function RGBAtoXYZA(rgbaMatrix) {
       }
     }
   }
+  // console.log("Converting RGB to XYZ");
+  // console.log("XYZ Array: ", result);
   return { xyz: result, a };
 }
 
-function transformationFunction_XYZtoLAB(t, delta = 6 / 29) {
-  return t > delta ** 3 ? Math.cbrt(t) : t / (3 * delta ** 2) + 4 / 29;
+function transformationFunction_XYZtoLAB(t) {
+  return t > 0.008856 ? Math.cbrt(t) : 7.787 * t + (16 / 116);
 }
 
 export function XYZtoLab(
   xyzPixel,
-  whitePoint = { X: 95.0489, Y: 100.0, Z: 108.884 }
+  whitePoint = { X: 0.95047, Y: 1, Z: 1.08883 }
 ) {
-  const { x, y, z } = xyzPixel;
-
-  //D65 reference white point
-  const { X: Xn, Y: Yn, Z: Zn } = whitePoint;
-
-  //X, Y, and Z come from matrix we get back from RGBtoXYZ conversion
-
-  //Normalize XYZ by the reference white point
-  const Xr = x / Xn;
-  const Yr = y / Yn;
-  const Zr = z / Zn;
-
-  //apply transformation function
-  const fX = transformationFunction_XYZtoLAB(Xr);
-  const fY = transformationFunction_XYZtoLAB(Yr);
-  const fZ = transformationFunction_XYZtoLAB(Zr);
-
-  //calculate CIELAB values
-  const L = 116 * fY - 16;
-  const a = 500 * (fX - fY);
-  const b = 200 * (fY - fZ);
-
-  return { L, a, b };
+   const { x, y, z } = xyzPixel;
+  
+    //D65 reference white point
+    const { X: Xn, Y: Yn, Z: Zn } = whitePoint;
+  
+    //X, Y, and Z come from matrix we get back from RGBtoXYZ conversion
+  
+    //Normalize XYZ by the reference white point
+    const Xr = x / Xn;
+    const Yr = y / Yn;
+    const Zr = z / Zn;
+  
+    //apply transformation function
+    const fX = transformationFunction_XYZtoLAB(Xr);
+    const fY = transformationFunction_XYZtoLAB(Yr);
+    const fZ = transformationFunction_XYZtoLAB(Zr);
+  
+    //calculate CIELAB values
+    const L = 116 * fY - 16;
+    const a = 500 * (fX - fY);
+    const b = 200 * (fY - fZ);
+  
+    return [L, a, b];
 }
 
 export function LabToXYZ(
   labPixel,
-  whitePoint = { X: 95.047, Y: 100.0, Z: 108.883 }
+  whitePoint = { X: 0.95047, Y: 1, Z: 1.08883 }
 ) {
   const L = labPixel[0];
   const a = labPixel[1];
@@ -174,11 +183,13 @@ export function LabToXYZ(
   const y = Yr * Yn;
   const z = Zr * Zn;
 
+  // console.log("XYZ Point: ", { x, y, z });
+
   return { x, y, z };
 }
 
 export function XYZtoRGB(xyzPixel) {
-  const { x, y, z } = xyzPixel;
+ const { x, y, z } = xyzPixel;
 
   // Transformation matrix for converting XYZ to linear RGB (sRGB D65)
   const M = [
@@ -201,30 +212,28 @@ export function XYZtoRGB(xyzPixel) {
   const g = Math.min(Math.max(gammaCorrect(gLinear), 0), 1);
   const b = Math.min(Math.max(gammaCorrect(bLinear), 0), 1);
 
-  const r_rounded = Math.round(r * 255);
-  const g_rounded = Math.round(g * 255);
-  const b_rounded = Math.round(b * 255);
+  // console.log("RGB point: ", {
+  //   r: Math.round(r * 255),
+  //   g: Math.round(g * 255),
+  //   b: Math.round(b * 255),
+  // })
 
   // Scale to 8-bit RGB range [0, 255]
   return {
-    r: r_rounded,
-    g: g_rounded,
-    b: b_rounded,
+    r: Math.round(r * 255),
+    g: Math.round(g * 255),
+    b: Math.round(b * 255),
   };
 }
 
 export function processImage(pixels, scrapedColors) {
-  const colors = Object.values(parseColors(pixels)).flatMap(
-    //from img - RGBA
-    ({ r, g, b, a }) => [r, g, b, a]
-  );
+  //Getting colors into correct shape [[r, g, b, a], [r, g, b, a], ...]
+  const colors = Object.values(parseColors(pixels)).flatMap(({ r, g, b, a }) => [r, g, b, a]);
 
   //using this table because of new scrapedColors structure
-  const table = Object.values(scrapedColors).flatMap((color) => [
-    color.r,
-    color.g,
-    color.b,
-  ]);
+  const table = Object.values(scrapedColors).flatMap((color) => [color.r, color.g, color.b]);
+  console.log("Raw scraped colors: ", scrapedColors);
+  console.log("Scraped Colors Table: ", table);
 
   //convert and transform
   const colorsMatrix_RGBA = toMatrix(colors);
@@ -233,7 +242,7 @@ export function processImage(pixels, scrapedColors) {
   const lookupTableMatrix_RGB = toMatrix(table, "RGB");
   const lookupTableMatrix_XYZA = RGBAtoXYZA(lookupTableMatrix_RGB);
 
-  //need to run the XYZ to Lab conversion for every pixel
+  // Converting each XYZ pixel to Lab pixel -- COLORS FROM IMAGE
   const colors_LabValues = [];
   for (let i = 0; i < colorsMatrix_XYZA.xyz[0].length; i++) {
     const pixel = [];
@@ -246,10 +255,11 @@ export function processImage(pixels, scrapedColors) {
       z: pixel[2],
     };
     const labPixel = Object.values(XYZtoLab(xyzPixel));
+    // console.log("Lab Pixel (IMAGE): ", labPixel);
     colors_LabValues.push(labPixel);
   }
 
-  //need to run the XYZ to Lab conversion for every pixel
+  //Converting each XYZ pixel to Lab pixel -- LOOKUP TABLE
   const lookupTable_LabValues = [];
   for (let i = 0; i < lookupTableMatrix_XYZA.xyz[0].length; i++) {
     const pixel = [];
@@ -262,17 +272,19 @@ export function processImage(pixels, scrapedColors) {
       z: pixel[2],
     };
     const labPixel = Object.values(XYZtoLab(xyzPixel));
+    // console.log("Lab Pixel (TABLE): ", labPixel);
     lookupTable_LabValues.push(labPixel);
   }
 
   //now find nearest neighbor
+  // console.log("TABLE: ", table);
   const colorLookupTree = new KDTree(lookupTable_LabValues);
 
-  const nuColors = [];
+  const nuColors = []; //COLOR PALETTE
   for (let i = 0; i < colors_LabValues.length; i++) {
-    const value = colors_LabValues[i];
-    const labPixel = colorLookupTree.findNearestNeighbor(value).point;
-    const xyzPixel = LabToXYZ(labPixel);
+    const labPixel = [colors_LabValues[i][0], colors_LabValues[i][1], colors_LabValues[i][2]]; //separating out RGB for calculation
+    const newValue = colorLookupTree.findNearestNeighbor(labPixel).point;
+    const xyzPixel = LabToXYZ(newValue); //returns object
     const rgbaPixel = { ...XYZtoRGB(xyzPixel), a: colorsMatrix_RGBA[3][i] };
     nuColors.push(rgbaPixel);
   }
@@ -287,13 +299,13 @@ export function processImage(pixels, scrapedColors) {
 
   const updatedPixels = [];
   for (let i = 0; i < pixels.length; i += 4) {
-    const colorKey = `R${pixels[i]}G${pixels[i + 1]}B${pixels[i + 2]}A${
-      pixels[i + 3]
-    }`;
+    const colorKey = `R${pixels[i]}G${pixels[i + 1]}B${pixels[i + 2]}A${pixels[i + 3]
+      }`;
 
     const extractedValues = colorComparisonChart[colorKey]
       .match(/\d+/g)
       .map(Number);
+
     updatedPixels.push(
       extractedValues[0],
       extractedValues[1],

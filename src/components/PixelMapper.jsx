@@ -102,7 +102,7 @@ function PixelMapper() {
     const formData = new FormData();
     formData.append("image", uploadedImage);
 
-    fetch("https://rgb-color-matcher-and-web-scraper.onrender.com/api/upload-image", {
+    fetch("http://localhost:5000/api/upload-image", {
       method: "POST",
       body: formData,
     })
@@ -151,10 +151,6 @@ function PixelMapper() {
     if (!colorPalette || Object.keys(colorPalette).length === 0) {
       return;
     }
-
-    // if (!imagePixelData.updatedPixels) {
-    //   return;
-    // }
 
     const { width, height, updatedPixels, originalPixels } = imagePixelData;
 
@@ -215,7 +211,7 @@ function PixelMapper() {
       }
     }
 
-    // console.log("PIXEL DATA: ", pixelData);
+    console.log("PIXEL DATA: ", pixelData);
 
     const imageData = new ImageData(pixelData, width, height);
     context.putImageData(imageData, 0, 0);
@@ -243,7 +239,8 @@ function PixelMapper() {
     gridSettings,
     boardSize,
     highlightedColor,
-    showOriginalColors
+    showOriginalColors,
+
   ]);
 
   //adjusting size of main so scrollbars appear on overflow

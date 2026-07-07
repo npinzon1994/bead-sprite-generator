@@ -11,19 +11,18 @@ import {
   GlobalStyles,
 } from "@mui/material";
 import { processImage } from "./model/matrix-transformations";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 
 function App() {
   const queryClient = new QueryClient();
   const [darkMode, setDarkMode] = useState(true);
-  
+
   const {
     imagePixelData,
     setImagePixelData,
     scrapedColors,
-    setScrapedColors,
     selectedBrands,
-    beadSize,
+    beadSize
   } = useContext(ColorsContext);
 
   const theme = createTheme({
@@ -75,7 +74,7 @@ function App() {
 
   //fetching default image on first load
   useEffect(() => {
-    fetch("https://rgb-color-matcher-and-web-scraper.onrender.com/api/default-image")
+    fetch("http://localhost:5000/api/default-image")
       .then((response) => {
         console.log("[React] Response Received (Default Image Pixel Data)");
         return response.json();
@@ -87,7 +86,26 @@ function App() {
       .catch((error) => console.error("Error fetching default image:", error));
   }, [setImagePixelData]);
 
-  //reprocessing colors when bead selection changes
+  // useQuery({
+  //   queryKey: [
+  //     "reprocess-image",
+  //     selectedBrands.perler,
+  //     selectedBrands.artkal,
+  //     selectedBrands.top_tier,
+  //     beadSize,
+  //   ], queryFn: () => {
+  //     if (!imagePixelData.originalPixels) {
+  //       return;
+  //     }
+  //     const { updatedPixels } = processImage(
+  //       imagePixelData.originalPixels,
+  //       scrapedColors
+  //     );
+  //     setImagePixelData((prev) => ({ ...prev, updatedPixels }));
+  //   }
+  // });
+
+  // reprocessing colors when bead selection changes
   useEffect(() => {
     if (!imagePixelData.originalPixels) {
       return;
