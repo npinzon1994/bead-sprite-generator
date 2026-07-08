@@ -18,7 +18,9 @@ const ColorsContext = createContext({
   beadSize: "",
   setBeadSize: () => { },
   showOriginalColors: false,
-  setShowOriginalColors: () => { }
+  setShowOriginalColors: () => { },
+  colorSwapMap: {},
+  setColorSwapMap: () => { },
 });
 
 export const ColorsContextProvider = ({ children }) => {
@@ -35,6 +37,12 @@ export const ColorsContextProvider = ({ children }) => {
     top_tier: false,
   });
   const [beadSize, updateBeadSize] = useState("midi");
+  const [colorSwapMap, updateColorSwapMap] = useState({});
+
+  const setColorSwapMap = useCallback(
+    (value) => updateColorSwapMap(value),
+    []
+  );
 
   const setColorPalette = useCallback(
     (colors) => updateColorPalette(colors),
@@ -94,7 +102,9 @@ export const ColorsContextProvider = ({ children }) => {
       beadSize,
       setBeadSize,
       showOriginalColors,
-      setShowOriginalColors
+      setShowOriginalColors,
+      colorSwapMap,
+      setColorSwapMap
     }),
     [
       colorPalette,
@@ -114,7 +124,9 @@ export const ColorsContextProvider = ({ children }) => {
       beadSize,
       setBeadSize,
       showOriginalColors,
-      setShowOriginalColors
+      setShowOriginalColors,
+      colorSwapMap,
+      setColorSwapMap
     ]
   );
 

@@ -24,7 +24,8 @@ function PixelMapper() {
     uploadedImage,
     highlightedColor,
     showOriginalColors,
-    setShowOriginalColors
+    setShowOriginalColors,
+    colorSwapMap
   } = useContext(ColorsContext);
 
   const { backgroundSettings, gridSettings, boardSize, zoomLevel } =
@@ -102,7 +103,7 @@ function PixelMapper() {
     const formData = new FormData();
     formData.append("image", uploadedImage);
 
-    fetch("https://rgb-color-matcher-and-web-scraper.onrender.com/api/upload-image", {
+    fetch("http://localhost:5000/api/upload-image", {
       method: "POST",
       body: formData,
     })
@@ -186,26 +187,33 @@ function PixelMapper() {
     const pixelData = new Uint8ClampedArray(width * height * 4);
 
     //see if OG colors box was checked
-    const outputPixels = showOriginalColors ? originalPixels : updatedPixels;
-    for (let i = 0; i < outputPixels.length; i += 4) {
-      const r = outputPixels[i];
-      const g = outputPixels[i + 1];
-      const b = outputPixels[i + 2];
-      const a = outputPixels[i + 3];
+    const basePixels = showOriginalColors ? originalPixels : updatedPixels;
+    for (let i = 0; i < basePixels.length; i += 4) {
+      let r = basePixels[i];
+      let g = basePixels[i + 1];
+      let b = basePixels[i + 2];
+      let a = basePixels[i + 3];
+
+      const sourceKey = `R${r}G${g}B${b}A${a}`;
+      const replacement = colorSwapMap[sourceKey];
+
+      if (!showOriginalColors && replacement) {
+        r = replacement.r;
+        g = replacement.g;
+        b = replacement.b;
+        a = replacement.a ?? a;
+      }
 
       pixelData[i] = r;
       pixelData[i + 1] = g;
       pixelData[i + 2] = b;
       pixelData[i + 3] = a;
 
-      if (!highlightedColor) {
-        continue;
-      }
-
       if (
-        r !== highlightedColor.r ||
-        g !== highlightedColor.g ||
-        b !== highlightedColor.b
+        highlightedColor &&
+        (r !== highlightedColor.r ||
+          g !== highlightedColor.g ||
+          b !== highlightedColor.b)
       ) {
         pixelData[i + 3] = 0;
       }
@@ -240,7 +248,7 @@ function PixelMapper() {
     boardSize,
     highlightedColor,
     showOriginalColors,
-
+    colorSwapMap
   ]);
 
   //adjusting size of main so scrollbars appear on overflow

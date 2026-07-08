@@ -29,7 +29,7 @@ h1 {
   line-height: 1.1;
 }
 
-button {
+.native-button {
   border-radius: 8px;
   color: white;
   padding: 0.6em 1.2em;
@@ -41,6 +41,6 @@ button {
   border: none;
 }
 
-button:active {
+.native-button:active {
   background: rgb(12, 129, 100);
 }

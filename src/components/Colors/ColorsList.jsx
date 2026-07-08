@@ -7,7 +7,15 @@ import {
   ListSubheader,
   Typography,
   useTheme,
+  Box,
+  Button,
+  IconButton,
+  Tooltip
 } from "@mui/material";
+
+import PalettePickerPopover from "../Controls/PalettePickerPopover";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 
 const formatWithComma = (number) => Intl.NumberFormat("en-US").format(number);
 
@@ -20,6 +28,24 @@ const ColorsList = () => {
 
   const colorPaletteArray = Object.values(colorPalette);
   const outputColors = [];
+
+  const [swapSourceColor, setSwapSourceColor] = useState(null);
+  const [swapAnchorEl, setSwapAnchorEl] = useState(null);
+
+  function handleManualSwap(replacementColor) {
+    const sourceKey = `R${swapSourceColor.r}G${swapSourceColor.g}B${swapSourceColor.b}A${swapSourceColor.a}`;
+
+    setColorSwapMap((prev) => ({
+      ...prev,
+      [sourceKey]: {
+        ...replacementColor,
+        a: swapSourceColor.a,
+      },
+    }));
+
+    setSwapSourceColor(null);
+    setSwapAnchorEl(null);
+  }
 
   for (let i = 0; i < colorPaletteArray.length; i++) {
     const color = { ...colorPaletteArray[i] };
@@ -43,6 +69,18 @@ const ColorsList = () => {
     return luminance > 0.5 ? "#000000" : "#ffffff"; // Use black text if background is light
   };
 
+  function swapColor(sourceColor, replacementColor) {
+    const sourceKey = `R${sourceColor.r}G${sourceColor.g}B${sourceColor.b}A${sourceColor.a}`;
+
+    setColorSwapMap((prev) => ({
+      ...prev,
+      [sourceKey]: {
+        ...replacementColor,
+        a: sourceColor.a,
+      },
+    }));
+  }
+
   return (
     <List sx={{ overflow: "auto", padding: 0, maxHeight: "100vh" }}>
       <ListSubheader
@@ -55,6 +93,17 @@ const ColorsList = () => {
       >
         COLORS
       </ListSubheader>
+      <PalettePickerPopover
+        open={Boolean(swapAnchorEl)}
+        anchorEl={swapAnchorEl}
+        onClose={() => {
+          setSwapAnchorEl(null);
+          setSwapSourceColor(null);
+        }}
+        scrapedColors={scrapedColors}
+        sourceColor={swapSourceColor}
+        onSelectColor={handleManualSwap}
+      />
       {filteredColors.map((color, index) => (
         <ListItem key={index} disablePadding>
           <ListItemButton
@@ -62,30 +111,20 @@ const ColorsList = () => {
             onClick={() => {
               handleListItemClick(index);
               setHighlightedColor((prev) => {
-                if (!prev) {
-                  return color;
-                }
+                if (!prev) return color;
                 return prev.colorKey === color.colorKey ? null : color;
               });
             }}
-            tabIndex={0}
-            onBlur={() => {
-              if (mouseDown) {
-                return;
-              }
-              handleListItemClick(null);
-              setHighlightedColor(null);
-            }}
-            onMouseDown={() => setMouseDown(true)}
-            onMouseUp={() => setMouseDown(false)}
             sx={{
               background: `rgba(${color.r}, ${color.g}, ${color.b}, 0.85)`,
-              display: "flex",
-              justifyContent: "space-between",
-              gap: "2rem",
+              display: "grid",
+              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+              alignItems: "center",
+              justifyContent: "space-evenly",
+              gap: 1.5,
               paddingBlock: 1.2,
-              opacity:
-                selectedIndex !== null && selectedIndex !== index ? 0.35 : 1,
+              paddingInline: 1,
+              opacity: selectedIndex !== null && selectedIndex !== index ? 0.35 : 1,
 
               "&:hover": {
                 background: `rgba(${color.r}, ${color.g}, ${color.b}, 0.65)`,
@@ -98,25 +137,73 @@ const ColorsList = () => {
               },
             }}
           >
-            <Typography
-              primary={color.name}
-              sx={{
-                color: getContrastingTextColor(color.r, color.g, color.b),
-                fontSize: theme.typography.small,
-                fontWeight: 600,
-              }}
-            >
-              {color.name}
-            </Typography>
+            {/* Quantity - left */}
             <Typography
               sx={{
                 color: getContrastingTextColor(color.r, color.g, color.b),
-                fontSize: theme.typography.small,
-                fontWeight: 600,
+                fontSize: "0.65rem",
+                fontWeight: 700,
+                opacity: 0.85,
               }}
             >
               {formatWithComma(color.quantity)}
             </Typography>
+
+            {/* Color name - center */}
+            <Typography
+              sx={{
+                color: getContrastingTextColor(color.r, color.g, color.b),
+                fontSize: "0.9rem",
+                fontWeight: 800,
+                textAlign: "center",
+                justifySelf: "center",
+              }}
+            >
+              {color.code ? color.code : color.name}
+            </Typography>
+
+            <Tooltip title="Swap color" sx={{
+              justifySelf: "end"
+            }}>
+              <IconButton
+                size="small"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setSwapSourceColor(color);
+                  setSwapAnchorEl(event.currentTarget);
+                }}
+              >
+                <SwapHorizIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+
+            {/* Buttons - right */}
+            {/* <Box
+              onClick={(event) => event.stopPropagation()}
+              sx={{
+                display: "flex",
+                gap: 0.5,
+                justifySelf: "end",
+              }}
+            >
+              <Button
+                size="small"
+                variant="text"
+                sx={{
+                  minWidth: "auto",
+                  px: 0.75,
+                  py: 0.25,
+                  fontSize: "0.6rem",
+                  color: getContrastingTextColor(color.r, color.g, color.b),
+                  backgroundColor: "rgba(0,0,0,0.15)",
+                  "&:hover": {
+                    backgroundColor: "rgba(0,0,0,0.25)",
+                  },
+                }}
+              >
+                CLOSEST
+              </Button>
+            </Box> */}
           </ListItemButton>
         </ListItem>
       ))}
