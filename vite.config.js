@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "/pixel-counter/",
+  base: "/bead-sprite-generator/",
   plugins: [react()],
   test: {
     globals: true,
