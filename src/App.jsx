@@ -74,7 +74,7 @@ function App() {
 
   //fetching default image on first load
   useEffect(() => {
-    fetch("http://localhost:5000/api/default-image")
+    fetch("https://rgb-color-matcher-and-web-scraper.onrender.com/api/default-image")
       .then((response) => {
         console.log("[React] Response Received (Default Image Pixel Data)");
         return response.json();

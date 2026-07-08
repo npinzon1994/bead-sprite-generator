@@ -102,7 +102,7 @@ function PixelMapper() {
     const formData = new FormData();
     formData.append("image", uploadedImage);
 
-    fetch("http://localhost:5000/api/upload-image", {
+    fetch("https://rgb-color-matcher-and-web-scraper.onrender.com/api/upload-image", {
       method: "POST",
       body: formData,
     })

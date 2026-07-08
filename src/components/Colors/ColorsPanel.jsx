@@ -19,7 +19,7 @@ const ColorsPanel = () => {
   function fetchScrapedColors(selectedBrands, beadSize) {
     console.log("Selected Brands: ", selectedBrands);
     console.log("Selected Size: ", beadSize);
-    return fetch("http://localhost:5000/api/get-color-table", {
+    return fetch("https://rgb-color-matcher-and-web-scraper.onrender.com/api/get-color-table", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ selectedBrands, beadSize }),
