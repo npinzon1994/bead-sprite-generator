@@ -1,0 +1,16 @@
+# Ignore node_modules (installed separately inside the container)
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Ignore build output (only needed if using 'npm start' inside Docker)
+build
+
+# Ignore environment variables
+.env
+
+# Ignore local development files
+.git
+.vscode
+.DS_Store
+*.swp
