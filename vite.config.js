@@ -17,7 +17,7 @@ export default defineConfig({
     host: "0.0.0.0",
     proxy: {
       "/api": {
-        target: "http://localhost:5000", // Backend server address
+        target: "https://rgb-color-matcher-and-web-scraper.onrender.com", // Backend server address
         changeOrigin: true, // Ensures the host header matches the target
         secure: false, // Disable SSL verification (if needed for local dev)
       },
